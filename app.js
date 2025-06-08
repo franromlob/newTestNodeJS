@@ -13,7 +13,7 @@ const server = http.createServer((req, res) => {
   res.end("<h1> Hola, mundo </h1>");
 });
 
-// Levantamos el Servidor, para el caso PORT = 3000
+// Levantamos el Servidor, PORT = 3000
 server.listen(PORT, () => {
   console.log(`Server running at http:localhost:${PORT}`);
 });
