@@ -10,7 +10,7 @@ const PORT = 3000;
 const server = http.createServer((req, res) => {
   // Le enviaremos un contenido tipo: HTML
   res.setHeader("Content-Type", "text/html; charset=utf-");
-  res.end("<h1> Hola, mundo </h1>");
+  res.end("<h1> Hola, mundo maravilloso </h1>");
 });
 
 // Levantamos el Servidor, PORT = 3000
