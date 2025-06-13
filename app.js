@@ -1,19 +1,22 @@
-// VAMOS A CREAR UN PEQUEÑO SERVIDOR, es mecánico, siempre se hace igual
+// Importamos el módulo de 'Express'
+const express = require("express");
 
-// Coge el módulo 'http', que es para crear un servidor
-const http = require("http");
-
+// Declaramos un puerto
 const PORT = 3000;
 
-// req: son los detalles de la solicitud, lo que nos va a enviar
-// res: la respuesta al cliente
-const server = http.createServer((req, res) => {
-  // Le enviaremos un contenido tipo: HTML
-  res.setHeader("Content-Type", "text/html; charset=utf-");
-  res.end("<h1> Hola, mundo maravilloso </h1>");
-});
+// Así inicializamos 'express' y podemos acceder a todas las funcionalidades que nos proporciona
+const app = express();
 
-// Levantamos el Servidor, PORT = 3000
-server.listen(PORT, () => {
-  console.log(`Server running at http:localhost:${PORT}`);
+// Analizamos los archivos JSON
+app.use(express.json());
+
+const users = require("./controllers/usersControllers");
+// Ésto son 'endpoint'    '/users'
+app.use("/users", users);
+
+app.use("/users/id", users);
+
+// Levanta el servidor
+app.listen(PORT, () => {
+  console.log(`Server running http://localhost:${PORT}`);
 });
