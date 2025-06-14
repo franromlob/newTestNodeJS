@@ -27,7 +27,31 @@ router.get("/:id", (req, res) => {
 
 // Método 'update' para actualizar usuario
 router.patch("/:id", (req, res) => {
-  res.send(`Soy update: ${req.params.id} - ${JSON.stringify(req.body)}`);
+  const userId = parseInt(req.params.id);
+  const { name, email } = req.body;
+
+  // Buscamos en el array por el valor que queremos buscar, en este caso por id
+  const user = USERS.find((user) => user.id === userId);
+
+  if (!user) {
+    return res.status(404).json({ message: "El usuariono existe." });
+  }
+
+  // Actualizar sólo los campos enviados
+  if (name) {
+    user.name = name;
+  }
+
+  if (email) {
+    user.email = email;
+  }
+
+  res.send(user);
+
+  res.json({
+    name: name,
+    email: email,
+  });
 });
 
 router.put("/:id", (req, res) => {
@@ -37,15 +61,21 @@ router.put("/:id", (req, res) => {
 // DELETE user por ID
 router.delete("/:id", (req, res) => {
   const userId = parseInt(req.params.id);
+  const originalLength = USERS.length;
 
   const filteredUsers = USERS.filter((user) => user.id !== userId);
-  USERS = filteredUsers;
-  res.send(filteredUsers);
 
-  // Aquí iría tu lógica para eliminar
+  // Verificar si se eliminó algo
+  if (filteredUsers.length === originalLength) {
+    return res.status(404).json({ message: "El usuario no existe" });
+  }
+
+  // Actualizar el array y responder
+  USERS = filteredUsers;
   res.json({
     message: `Usuario ${userId} eliminado exitosamente`,
     id: userId,
+    remainingUsers: filteredUsers,
   });
 });
 
