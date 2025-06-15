@@ -10,13 +10,12 @@ const app = express();
 // Analizamos los archivos JSON
 app.use(express.json());
 
-const users = require("./controllers/usersControllers");
-// Ésto son 'endpoint'    '/users'
+const users = require("./router/userRoutes");
+
+// Ésto son 'endpoint' -- '/users'
 app.use("/users", users);
 
-app.use("/users/id", users);
-
-// Levanta el servidor
+// Levanta el servidor -- De esta forma se inicializa
 app.listen(PORT, () => {
   console.log(`Server running http://localhost:${PORT}`);
 });
