@@ -1,3 +1,5 @@
+const userModel = require("../models/userModels");
+
 // Base de Datos tipo 'JSON'
 let USERS = [
   { id: 1, name: "Usuario 1", email: "usuario1@example.com" },
@@ -7,197 +9,122 @@ let USERS = [
 
 // const router = express.Router();
 
-// Método 'get' para obtener toda la collection users
-// router.get("/", (req, res) => {
-//   res.send(USERS);
-// });
+const getUsers = async (req, res) => {
+  try {
+    const users = await userModel.find(); // Busca todos los usuarios en la bbdd
+    res.status(200).json({ status: "succeeded", data, errorL: null }); // Devuelve los usuarios encontrados
+  } catch (error) {
+    res
+      .status(500)
+      .json({ status: "failed", data: null, error: error.message }); // Maneja cualquier error que ocurra
+  }
+};
 
 // Crea la función 'getUsers' para luego exportarla a 'userRoutes.js'
-const getUsers = (req, res) => {
-  res.send(USERS);
-};
+// const getUsers = (req, res) => {
+//   res.send(USERS);
+// };
 
-const getUserById = (req, res) => {
-  const id = parseInt(req.params.id);
-
-  const user = USERS.find((user) => user.id === id);
-
-  if (user.id === -1) {
-    return "El ususario no existe";
+const getUserById = async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const user = await userModel.findById(userId);
+    res.status(200).json({ status: "succeeded", data: user, error: null });
+    /** {
+      status: "succeeded",  // Indica el estado de la operación
+      data: user,           // Contiene los datos del usuario solicitado
+      error: null           // Indica que no hubo errores (podría ser un objeto de error si falla)
+    }
+    */
+  } catch (error) {
+    if (!user) {
+      return res
+        .status(500)
+        .json({ status: "Failed", data: null, error: error.message });
+    }
   }
-
-  res.send(user);
 };
 
-// Añade usuario con POST
-const addUser = (req, res) => {
-  const { name, email } = req.body;
+// Método 'patch' implementar operaciones de 'actualización parcial'
+const patchById = async (req, res) => {
+  try {
+    const userId = req.params.id;
 
-  const newIndex = USERS.length + 1;
+    // Obtiene el nuevo nombre y correo electrónico del usuario
+    const { name, email } = req.body;
 
-  const newUser = {
-    id: newIndex,
-    name: name,
-    email: email,
-  };
+    // Busca un usuario por su ID
+    const user = await userModel.findById(userId);
 
-  console.log(newUser);
-  console.log(newIndex);
+    if (!user) {
+      return res.status(400).send("El usuario no existe");
+    }
 
-  // Lo añadimos al Array
-  USERS.push(newUser);
+    if (name) {
+      // Actualiza el nombre del usuario si se proporciona uno nuevo
+      user.name = name;
+    }
 
-  res.send(newUser);
+    if (email) {
+      // Actualiza el email del usuario si se proporciona uno nuevo
+      user.email = email;
+    }
+
+    // Guarda los cambios en la bbdd
+    await user.save();
+    res.status(200).json({ status: "succeedded", data, error: null });
+  } catch (error) {
+    res
+      .status(500)
+      .send({ status: "failed", data: null, error: error.message });
+  }
 };
 
-// DELETE usuario
-const deleteUser = (req, res) => {
-  const idUser = parseInt(req.params.id);
+// Añadir un Usuario con POST
+const addUser = async (req, res) => {
+  try {
+    // Obtiene el nombre y correo electrónico del nuevo usuario
+    const { name, email } = req.body;
 
-  if (!idUser) {
-    return res.status(404).json({
-      message: `El usuario con id ${idUser} no existe`,
+    // Crea un nuevo usuario con los datos proporcionados
+    const newUser = new userModel({ name, email });
+
+    // Guarda el nuevo usuario en la BBDD
+    await newUser.save();
+
+    res.status(200).json({
+      status: "succeed",
+      data: newUser,
+      error: null,
     });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ status: "failed", data: null, error: error.message });
   }
-
-  const users = USERS.filter((user) => user.id !== idUser);
-
-  console.log(users);
-
-  return res.send(users);
 };
 
-module.exports = { getUsers, getUserById, addUser, deleteUser };
+// Eliminar usuario con DELETE
+const deleteUser = async (req, res) => {
+  try {
+    const { id } = req.body;
+    const deletedUser = await userModel.findByIdAndDelete(id);
 
-// const updateById = (req, res) => {
-//   const idUser = parseInt(req.params.id);
+    const users = await userModel.filter((usr) => usr !== deletedUser);
 
-//   const user = USERS.find((user) => user.id === idUser);
+    if (!deletedUser) {
+      return res.status(404).json({
+        status: "failed",
+        message: "Usuario no encontrado",
+      });
+    }
 
-//   const { name, email } = user.body;
+    res.status(200).json({ status: "succeed", data: users, error: null });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ status: "failed", data: null, error: error.message });
+  }
+};
 
-//   if (idUser === -1) {
-//     return res.status(404).json({ message: "El usuario no existe" });
-//   }
-
-//   // Actualizamos el usuario, en este caso 'name' & 'email'
-
-//   if (name) {
-//     user.name = name;
-//   }
-
-//   if (email) {
-//     user.email = email;
-//   }
-
-//   res.send(user);
-// };
-
-// const putById = (req, res) => {
-//   const idUser = parseInt(req.params.id);
-
-//   const { name, email } = req.body;
-
-//   const userId = USERS.findIndex((user) => user.id === idUser);
-
-//   if (userId === -1) {
-//     return res.status(404).json({
-//       message: `El usuario con ID ${idUser} no existe`,
-//     });
-//   }
-
-//   // Reemplaza los datos del Usuario
-//   USERS[userId] = { id: idUser, name, email };
-
-//   return res.status(200).json(USERS[userId]);
-// };
-
-// // Método 'get' para obtener un único usuario
-// router.get("/:id", (req, res) => {
-//   // Convertimos el id de URL en un entero
-//   const id = parseInt(req.params.id);
-
-//   // Buscamos en el Array por el valor que queremos buscar, en este caso por 'id'
-//   const user = USERS.find((user) => user.id === id);
-
-//   res.send(user.name);
-// });
-
-// // Método 'update' para actualizar usuario
-// router.patch("/:id", (req, res) => {
-//   const userId = parseInt(req.params.id);
-//   const { name, email } = req.body;
-
-//   // Buscamos en el array por el valor que queremos buscar, en este caso por id
-//   const user = USERS.find((user) => user.id === userId);
-
-//   if (!user) {
-//     return res.status(404).json({ message: "El usuario no existe." });
-//   }
-
-//   // Actualizar sólo los campos enviados
-//   if (name) {
-//     user.name = name;
-//   }
-
-//   if (email) {
-//     user.email = email;
-//   }
-
-//   res.send(user);
-
-//   res.json({
-//     name: name,
-//     email: email,
-//   });
-// });
-
-// router.put("/:id", (req, res) => {
-//   res.send(`Soy 'put' ${req.params.id}`);
-// });
-
-// // DELETE user por ID
-// router.delete("/:id", (req, res) => {
-//   const userId = parseInt(req.params.id);
-//   const originalLength = USERS.length;
-
-//   const filteredUsers = USERS.filter((user) => user.id !== userId);
-
-//   // Verificar si se eliminó algo
-//   if (filteredUsers.length === originalLength) {
-//     return res.status(404).json({ message: "El usuario no existe" });
-//   }
-
-//   // Actualizar el array y responder
-//   USERS = filteredUsers;
-//   res.json({
-//     message: `Usuario ${userId} eliminado exitosamente`,
-//     id: userId,
-//     remainingUsers: filteredUsers,
-//   });
-// });
-
-// // DELETE User by ID
-// // router.delete("/:id", (req, res) => {
-// //   const id = parseInt(req.params.id);
-
-// //   // Encontrar el Índice
-// //   const userIndex = USERS.findIndex((user) => user.id === id);
-
-// //   // Validar si existe
-// //   if (userIndex === -1) {
-// //     return res.status(404).json({
-// //       success: false,
-// //       message: "Usuario No Encontrado",
-// //     });
-// //   }
-
-// //   // ELIMINAR del array (splice devuelve un array con el elemento eliminado)
-// //   const deletedUser = USERS.splice(userIndex, 1);
-
-// //   res.json({
-// //     success: true,
-// //     message: `Usuario ${deletedUser.name} eliminado exitosamente`,
-// //     deletedUser: deletedUser,
-// //   });
-// // });
+module.exports = { getUsers, getUserById, patchById, addUser, deleteUser };

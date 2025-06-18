@@ -13,9 +13,6 @@ const PORT = 3000;
 // Así inicializamos 'express' y podemos acceder a todas las funcionalidades que nos proporciona
 const app = express();
 
-// Analizamos los archivos JSON
-app.use(express.json());
-
 const url_mongo = process.env.DATABASE_URL_DEV;
 
 /** 🧠 Pseudocódigo Detallado
@@ -52,10 +49,14 @@ db.on("disconnected", () => {
   console.warn("⚠️ Se ha desconectado MongoDB");
 });
 
-const users = require("./router/userRoutes");
+// Importa el Router
+const userRoutes = require("./router/userRoutes");
+
+// Analizamos los archivos JSON -- Middlewares
+app.use(express.json());
 
 // Ésto son 'endpoint' -- '/users'
-app.use("/users", users);
+app.use("/users", userRoutes);
 
 // Levanta el servidor -- De esta forma se inicializa
 app.listen(PORT, () => {
