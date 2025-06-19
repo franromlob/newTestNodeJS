@@ -12,7 +12,7 @@ let USERS = [
 const getUsers = async (req, res) => {
   try {
     const users = await userModel.find(); // Busca todos los usuarios en la bbdd
-    res.status(200).json({ status: "succeeded", data, errorL: null }); // Devuelve los usuarios encontrados
+    res.status(200).json({ status: "succeeded", data: users, error: null }); // ✅ Corregido: 'users' en lugar de 'data'
   } catch (error) {
     res
       .status(500)
@@ -29,6 +29,14 @@ const getUserById = async (req, res) => {
   try {
     const userId = req.params.id;
     const user = await userModel.findById(userId);
+
+    if (!user) {
+      // ✅ Corregido: Movido dentro del try
+      return res
+        .status(404) // ✅ Corregido: 404 en lugar de 500
+        .json({ status: "failed", data: null, error: "Usuario no encontrado" });
+    }
+
     res.status(200).json({ status: "succeeded", data: user, error: null });
     /** {
       status: "succeeded",  // Indica el estado de la operación
@@ -37,11 +45,28 @@ const getUserById = async (req, res) => {
     }
     */
   } catch (error) {
-    if (!user) {
-      return res
-        .status(500)
-        .json({ status: "Failed", data: null, error: error.message });
-    }
+    res
+      .status(500)
+      .json({ status: "failed", data: null, error: error.message });
+  }
+};
+
+// EndPoint para ver el número de usuarios que existen en la bbdd
+const getNumUsers = async (req, res) => {
+  try {
+    const userCount = await userModel.countDocuments();
+    console.log(`Total de usuarios: ${userCount}`);
+    res.json({
+      success: true,
+      totalUsers: userCount,
+    });
+  } catch (error) {
+    console.error("Error al contar usuarios:", error.message);
+    res.status(500).json({
+      success: false,
+      message: "Error al contar usuarios",
+      error: error.message,
+    });
   }
 };
 
@@ -57,7 +82,12 @@ const patchById = async (req, res) => {
     const user = await userModel.findById(userId);
 
     if (!user) {
-      return res.status(400).send("El usuario no existe");
+      return res.status(404).json({
+        // ✅ Corregido: 404 en lugar de 400
+        status: "failed",
+        data: null,
+        error: "El usuario no existe",
+      });
     }
 
     if (name) {
@@ -72,11 +102,11 @@ const patchById = async (req, res) => {
 
     // Guarda los cambios en la bbdd
     await user.save();
-    res.status(200).json({ status: "succeedded", data, error: null });
+    res.status(200).json({ status: "succeeded", data: user, error: null }); // ✅ Corregido: 'user' en lugar de 'data'
   } catch (error) {
     res
       .status(500)
-      .send({ status: "failed", data: null, error: error.message });
+      .json({ status: "failed", data: null, error: error.message }); // ✅ Corregido: .json() en lugar de .send()
   }
 };
 
@@ -92,8 +122,9 @@ const addUser = async (req, res) => {
     // Guarda el nuevo usuario en la BBDD
     await newUser.save();
 
-    res.status(200).json({
-      status: "succeed",
+    res.status(201).json({
+      // ✅ Corregido: 201 para creación exitosa
+      status: "succeeded", // ✅ Corregido: "succeeded" en lugar de "succeed"
       data: newUser,
       error: null,
     });
@@ -110,8 +141,6 @@ const deleteUser = async (req, res) => {
     const { id } = req.body;
     const deletedUser = await userModel.findByIdAndDelete(id);
 
-    const users = await userModel.filter((usr) => usr !== deletedUser);
-
     if (!deletedUser) {
       return res.status(404).json({
         status: "failed",
@@ -119,7 +148,12 @@ const deleteUser = async (req, res) => {
       });
     }
 
-    res.status(200).json({ status: "succeed", data: users, error: null });
+    // ✅ Corregido: Eliminada línea problemática con .filter() en userModel
+    res.status(200).json({
+      status: "succeeded", // ✅ Corregido: "succeeded" en lugar de "succeed"
+      data: deletedUser,
+      error: null,
+    });
   } catch (error) {
     res
       .status(500)
@@ -127,4 +161,11 @@ const deleteUser = async (req, res) => {
   }
 };
 
-module.exports = { getUsers, getUserById, patchById, addUser, deleteUser };
+module.exports = {
+  getUsers,
+  getUserById,
+  getNumUsers,
+  patchById,
+  addUser,
+  deleteUser,
+};

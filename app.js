@@ -17,7 +17,7 @@ const url_mongo = process.env.DATABASE_URL_DEV;
 
 /** 🧠 Pseudocódigo Detallado
 1. Declarar URL de conexión a MongoDB
-2. sar mongoose.connect() para iniciar la conexión
+2. Usar mongoose.connect() para iniciar la conexión
 3. Obtener el objeto de conexión mongoose.connection
 4. Registrar manejadores de eventos para:
     4.1 Error
@@ -55,7 +55,7 @@ const userRoutes = require("./router/userRoutes");
 // Analizamos los archivos JSON -- Middlewares
 app.use(express.json());
 
-// Ésto son 'endpoint' -- '/users'
+// Registro de rutas - Solo una vez con prefijo /users
 app.use("/users", userRoutes);
 
 // Levanta el servidor -- De esta forma se inicializa

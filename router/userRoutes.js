@@ -1,22 +1,20 @@
-// La idea Principal es traernos los EndPoint aquí
-// para desacoplar la lógica del EndPoint
-
+const express = require("express");
+const router = express.Router();
 const {
   getUsers,
   getUserById,
+  getNumUsers,
   patchById,
   addUser,
   deleteUser,
 } = require("../controllers/usersControllers");
 
-const router = require("express").Router();
-
-router.get("/", getUsers);
-router.get("/:id", getUserById);
-
-// router.patch("/:id", updateById);
-
+// ⚠️ ORDEN IMPORTANTE: Rutas específicas PRIMERO
+router.patch("/:id", patchById);
 router.post("/", addUser);
-router.delete("/:id", deleteUser);
+router.delete("/", deleteUser);
+router.get("/num_users", getNumUsers); // PRIMERA
+router.get("/", getUsers);
+router.get("/:id", getUserById); // DESPUÉS de las específicas
 
 module.exports = router;
