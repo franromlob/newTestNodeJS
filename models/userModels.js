@@ -8,7 +8,8 @@ const Schema = mongoose.Schema;
 const userSchema = new Schema({
   name: {
     type: String,
-    required: true,
+    required: [true, "El nombre es requerido"],
+    trim,
   },
   email: {
     type: String,
